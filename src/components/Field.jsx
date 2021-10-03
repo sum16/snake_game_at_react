@@ -6,6 +6,7 @@ export const Field = ({ fields }) => {
       {
         fields.map((row) => {
           return row.map((column) => {
+            // console.log(row);
             return <div className={`dots ${column}`}></div>
           })
         })
