@@ -1,9 +1,14 @@
 import React from "react";
 
-export const Button = () => {
+export const Button = ({ status, onStart, onRestart}) => {
   return (
     <div className="button">
-    <button>start</button>
+      {
+        status === "gameover" ?
+        <button onClick={onRestart}>gameover</button>
+        :
+        <button onClick={onStart}>start</button>
+      }
   </div>
   )
 }
