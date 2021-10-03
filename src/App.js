@@ -1,8 +1,12 @@
-import './App.css';
 import { Button } from './components/Button';
 import { Field } from './components/Field';
 import { ManipulationPanel } from './components/ManipulationPanel';
 import { Navigation } from './components/Navigation';
+import {initFields} from "./utils/index"
+
+// 35 * 35のdivを生成する
+const fields = initFields(35)
+
 
 function App() {
   return (
@@ -14,7 +18,7 @@ function App() {
         <Navigation/>
       </header>
       <main className="main">
-        <Field/>
+      <Field fields={fields} />
       </main>
       <footer className="footer">
         <Button />
