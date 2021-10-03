@@ -7,7 +7,50 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+/*  要素が真ん中によるようにフレックスボックスを設定 */
+/*  display: frex; 親要素がflexコンテナとなり、子要素がflexアイテムとなる */
+/*  justify-content	flex-directionで並べる際に、主軸に対して子要素同士をどのような間隔で並べるかを指定するプロパティ */
+/*  align-items	flex-directionで並べる際に、交差軸に対して子要素同士をどのような間隔で並べるかを指定するプロパティ */
+#root {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
 }
+
+/* 「*（アスタリスク）」と記述することで、すべての要素に装飾が適用されます。 */
+/*  box-sizing  要素の幅（width）と高さ（height）の中にpaddingとborderを含めるかどうか」という設定ができます */
+/*  borderを含めた幅で要素の幅が計算されるようにする */
+*,
+*:before,
+*:after {
+  box-sizing: border-box;  /*  box-sizing: border-box; paddingとborderを幅と高さに含める */
+}
+
+
+.App {
+  max-width: calc(9px * 35 + 1px * 2); /* (マスの幅) * 個数 + (ボーダーの幅) * 本数   calc()関数は、プロパティの値を計算式で実行することができます*/
+  text-align: center;
+}
+
+.dots {
+  height: 9px;
+  width: 9px;
+  background: #0f1d1d;
+}
+
+/* ドットを横並びにして折り返す */
+.field {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.snake {
+  background: white;
+}
+
+.food {
+  background: pink;
+}
+
+
