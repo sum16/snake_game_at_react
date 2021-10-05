@@ -10,6 +10,9 @@ const initialPosition = {x: 17, y:17}
 // 35 * 35のdivを生成する
 const initialValues = initFields(35, initialPosition)
 const defaultInterval = 300
+
+
+
 // ゲームの状態のステータスを定義　freezeメソッドで書き変わらないようにする
 const GameStatus = Object.freeze({
   init: 'init',
@@ -80,10 +83,11 @@ function App() {
   const [status, setStatus]= useState(GameStatus.init);
   // 進行方向をステートで管理
   const [direction, setDirection] = useState(Direction.up);
+  const [body, setBody] = useState([]) //蛇が伸びる処理
 
 
   useEffect(() => {
-    setPosition(initialPosition)
+    setBody(initialPosition);
     // ゲームの中の時間を管理する
     timer = setInterval(() => {
       setTick(tick => tick + 1);
@@ -91,10 +95,10 @@ function App() {
     return unsubscribe // コンポーネントが削除されるタイミングで関数を呼ぶ
   }, [])
 
-  // tickの更新によるレンダリングごとにgoUp関数（進む機能）を実行している →100ミリ秒(defaultIntervalの値）ごとにレンダリングされる → ゲームの中の時間が進むたびにgoUp関数が呼ばれる
+  // tickの更新によるレンダリングごとに関数（進む機能）を実行している →100ミリ秒(defaultIntervalの値）ごとにレンダリングされる → ゲームの中の時間が進むたびに関数が呼ばれる
   useEffect(() => {
     // 進行を止める
-    if (!position || status !== GameStatus.playing){  // 初回のレンダリングでpositionがundifineになるため事前にnullチェックをする/ 画面を読み込んでもスネークは動かないようする
+    if (body.length === 0 || status !== GameStatus.playing){  // 初回のレンダリングでpositionがundifineになるため事前にnullチェックをする/ 画面を読み込んでもスネークは動かないようする
       return
     }
     // 進行する
@@ -114,8 +118,8 @@ function App() {
 
   // 進行方向を変更する関数
   const handleMoving = () => {
-    const { x, y } = position  // オブジェクトの分割代入 positionには{x:17, y:17}、xとyには17,17が入っている
-    console.log(position);
+    const { x, y } = body[[0]]  // オブジェクトの分割代入 positionには{x:17, y:17}、xとyには17,17が入っている
+    console.log(body);
     // const nextY = Math.max(y-1, 0) // y座標をデクリメント（1 ずつ減算）していくことでまっすぐ上にスネークが移動していく動きを実現
     const delta = Delta[direction]
     console.log(JSON.stringify(delta)); // {"x":0,"y":-1}などが入る
@@ -129,7 +133,7 @@ function App() {
     fields[y][x] = ''               // スネークの元いた位置を空にする
     // fields[nextY][x] = 'snake'      // 次にいる場所を"snake"に変更
     fields[newPosition.y][newPosition.x] = 'snake'
-    setPosition(newPosition)         //setPositionでスネークの位置を更新  
+    setBody([newPosition])      //setBodyでスネークの位置を更新  
     setFields(fields)               // setFieldsでフィールドを更新
     return true
   }
