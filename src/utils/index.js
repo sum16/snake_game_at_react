@@ -1,5 +1,5 @@
 // ランダムに表示されるエサがスネークの位置とかぶるのを排除
-const getFoodPosition = (fieldSize, excludes) => {  //excludes 0: { x:17 y: 17 }
+export const getFoodPosition = (fieldSize, excludes) => {  //excludes 0: { x:17 y: 17 }
   // 壁が34のため-1 & エサの出現可能エリアは一番外側から一個内側にしたいためさらに-1
   // 最小値を 1 としたいので最後に+1  これで1~32のレンジ
   while(true) {

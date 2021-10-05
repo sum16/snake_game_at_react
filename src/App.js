@@ -3,7 +3,7 @@ import { Button } from './components/Button';
 import { Field } from './components/Field';
 import { ManipulationPanel } from './components/ManipulationPanel';
 import { Navigation } from './components/Navigation';
-import {initFields} from "./utils/index"
+import { initFields, getFoodPosition } from './utils'
 
 // デフォルトの座標を指定
 const initialPosition = {x: 17, y:17}
@@ -87,7 +87,7 @@ function App() {
 
 
   useEffect(() => {
-    setBody(initialPosition);
+    setBody([initialPosition])
     // ゲームの中の時間を管理する
     timer = setInterval(() => {
       setTick(tick => tick + 1);
@@ -98,7 +98,7 @@ function App() {
   // tickの更新によるレンダリングごとに関数（進む機能）を実行している →100ミリ秒(defaultIntervalの値）ごとにレンダリングされる → ゲームの中の時間が進むたびに関数が呼ばれる
   useEffect(() => {
     // 進行を止める
-    if (body.length === 0 || status !== GameStatus.playing){  // 初回のレンダリングでpositionがundifineになるため事前にnullチェックをする/ 画面を読み込んでもスネークは動かないようする
+    if (body.length === 0 || status !== GameStatus.playing) { // 初回のレンダリングでpositionがundifineになるため事前にnullチェックをする/ 画面を読み込んでもスネークは動かないようする
       return
     }
     // 進行する
@@ -118,7 +118,7 @@ function App() {
 
   // 進行方向を変更する関数
   const handleMoving = () => {
-    const { x, y } = body[[0]]  // オブジェクトの分割代入 positionには{x:17, y:17}、xとyには17,17が入っている
+    const { x, y } = body[0]  // オブジェクトの分割代入 positionには{x:17, y:17}、xとyには17,17が入っている
     console.log(body);
     // const nextY = Math.max(y-1, 0) // y座標をデクリメント（1 ずつ減算）していくことでまっすぐ上にスネークが移動していく動きを実現
     const delta = Delta[direction]
@@ -130,10 +130,21 @@ function App() {
     if (isCollision(fields.length, newPosition)) {
       return false
     }
-    fields[y][x] = ''               // スネークの元いた位置を空にする
-    // fields[nextY][x] = 'snake'      // 次にいる場所を"snake"に変更
+    // エサを食べない場合 → body の末尾を消す
+    const newBody = [...body]
+    console.log(newBody);
+    if (fields[newPosition.y][newPosition.x] !== 'food') {
+      const removingTrack = newBody.pop();
+      fields[removingTrack.y][removingTrack.x] = ''
+    } else {
+      // 餌が食べられた場合
+      const food = getFoodPosition(fields.length, [...newBody], newPosition)      
+      fields[food.y][food.x] = 'food'
+    }
+    // エサを食べる場合 → body の末尾を消さない（消さないので伸びる)
     fields[newPosition.y][newPosition.x] = 'snake'
-    setBody([newPosition])      //setBodyでスネークの位置を更新  
+    newBody.unshift(newPosition)    
+    setBody(newBody)             //スネークの位置を更新  
     setFields(fields)               // setFieldsでフィールドを更新
     return true
   }
