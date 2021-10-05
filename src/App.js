@@ -72,6 +72,9 @@ const isCollision = (fieldSize, position) => {
   return false;
 };
 
+const isEatingMyself = (fields, position) => {
+  return fields[position.y][position.x] === 'snake'
+}
 
 function App() {
   // initFieldsで生成したフィールドのデータ（二次元配列）を初期値に設定
@@ -88,6 +91,10 @@ function App() {
 
   useEffect(() => {
     setBody([initialPosition])
+    // テスト用
+    // setBody(
+    //   new Array(15).fill('').map((_item, index) => ({ x: 17, y: 17 + index })),
+    // )
     // ゲームの中の時間を管理する
     timer = setInterval(() => {
       setTick(tick => tick + 1);
@@ -127,7 +134,8 @@ function App() {
       x: x + delta.x,
       y: y + delta.y
     }
-    if (isCollision(fields.length, newPosition)) {
+    // 壁にぶつかってしまった場合  自分を食べてしまった場合
+    if (isCollision(fields.length, newPosition) || isEatingMyself(fields, newPosition)) {
       return false
     }
     // エサを食べない場合 → body の末尾を消す
