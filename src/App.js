@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Button } from './components/Button';
 import { Field } from './components/Field';
 import { ManipulationPanel } from './components/ManipulationPanel';
@@ -9,7 +9,7 @@ import {initFields} from "./utils/index"
 const initialPosition = {x: 17, y:17}
 // 35 * 35のdivを生成する
 const initialValues = initFields(35, initialPosition)
-const defaultInterval = 1000
+const defaultInterval = 300
 // ゲームの状態のステータスを定義　freezeメソッドで書き変わらないようにする
 const GameStatus = Object.freeze({
   init: 'init',
@@ -18,10 +18,39 @@ const GameStatus = Object.freeze({
   gameover: 'gameover'
 })
 
+
+const Direction = Object.freeze({
+  up: "up",
+  down: "down",
+  right: "right",
+  left: "lect"
+});
+
+const OppositeDirection = Object.freeze({
+  up: 'down',
+  right: 'left',
+  left: 'right',
+  down: 'up'
+})
+
+const Delta = Object.freeze({
+  up: { x: 0, y: -1 },
+  down: { x: 0, y: 1 },
+  right: { x: 1, y: 0 },
+  left: { x: -1, y: 0 }
+});
+
+const DirectionKeyCodeMap = Object.freeze({
+  37: Direction.left,
+  38: Direction.up,
+  39: Direction.right,
+  40: Direction.down,
+})
+
 let timer = undefined // timerは関数
 
-const unsubscribe = () => {
-  if (!timer) {
+const unsubscribe = (timer) => {
+  if (!timer) {   // timerがundifindだったらreturn
     return
   }
   clearInterval(timer) //タイマーを削除
@@ -49,6 +78,8 @@ function App() {
   // tickは一定時間ごとにインクリメントされるが、ここのインクリメントされる値自体はあまり問題でなく、一定間隔でレンダリングがトリガーされるということが重要
   // useEffectの初回しかレンダリングできない問題を、tickのインクリメントが更新でのレンダリングによって解決している →100ミリ秒(defaultIntervalの値）ごとにレンダリングされる
   const [status, setStatus]= useState(GameStatus.init);
+  // 進行方向をステートで管理
+  const [direction, setDirection] = useState(Direction.up);
 
 
   useEffect(() => {
@@ -57,7 +88,7 @@ function App() {
     timer = setInterval(() => {
       setTick(tick => tick + 1);
     }, defaultInterval)
-    return unsubscribe // コンポーネントが削除されるタイミングで関数をreturn
+    return unsubscribe // コンポーネントが削除されるタイミングで関数を呼ぶ
   }, [])
 
   // tickの更新によるレンダリングごとにgoUp関数（進む機能）を実行している →100ミリ秒(defaultIntervalの値）ごとにレンダリングされる → ゲームの中の時間が進むたびにgoUp関数が呼ばれる
@@ -67,7 +98,7 @@ function App() {
       return
     }
     // 進行する
-    const canContinue = goUp()
+    const canContinue = handleMoving()
     if (!canContinue) {
       unsubscribe()
       setStatus(GameStatus.gameover)
@@ -75,40 +106,74 @@ function App() {
   }, [tick])
 
 
-  // スタートボタンを押した時にステータスを"playing"にスネークが動かせる
+  // スタートボタンを押した時にステータスを"playing"にする
   const onStart = () => {
     setStatus(GameStatus.playing)
     console.log(status);
   }
 
-
-  const goUp = () => {
+  // 進行方向を変更する関数
+  const handleMoving = () => {
     const { x, y } = position  // オブジェクトの分割代入 positionには{x:17, y:17}、xとyには17,17が入っている
     console.log(position);
     // const nextY = Math.max(y-1, 0) // y座標をデクリメント（1 ずつ減算）していくことでまっすぐ上にスネークが移動していく動きを実現
-    const newPosition = { x, y: y -1 }
+    const delta = Delta[direction]
+    console.log(JSON.stringify(delta)); // {"x":0,"y":-1}などが入る
+    const newPosition = {
+      x: x + delta.x,
+      y: y + delta.y
+    }
     if (isCollision(fields.length, newPosition)) {
-      unsubscribe()
       return false
     }
     fields[y][x] = ''               // スネークの元いた位置を空にする
     // fields[nextY][x] = 'snake'      // 次にいる場所を"snake"に変更
-    fields[newPosition.y][x] = 'snake'
+    fields[newPosition.y][newPosition.x] = 'snake'
     setPosition(newPosition)         //setPositionでスネークの位置を更新  
     setFields(fields)               // setFieldsでフィールドを更新
     return true
   }
 
+  // 進行方向を変更する関数  newDirectionには押された矢印のキーコードに対応する'up'やdownが入る
+  const onChangeDirection = useCallback((newDirection) => {
+    // ゲームプレイ中だけ方向が変えられる
+    if(status !== GameStatus.playing) {
+      return direction
+    }
+    // 押された矢印の方向が同じであれば処理を抜ける ゲームのルール上進行方向と真逆への移動は許容しない 
+    // 例) directionがrightの場合、OppositeDirection[direction]にはleftが入り、新しい進行方向(newDirection)をleftにすると真逆の制約となるためreturn
+    if(OppositeDirection[direction] === newDirection) {
+      return
+    }
+    setDirection(newDirection);
+  }, [direction, status])
+
+// 押された矢印のキーコードを取得し、キーコードのプロパティを取得('up'や'down'など) newDirectionには'up'や'down'などのstringが入る
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      const newDirection = DirectionKeyCodeMap[e.keyCode];
+      if (!newDirection) {
+        return;
+      }
+      onChangeDirection(newDirection);
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  },[onChangeDirection])
+  // 1 回目と 2 回目のイベントの内容はほぼ同じなのですが、イベントが登録された時の状態（ステータスや進行方向）が違うので再度登録し直す必要がある
+
+
   const onRestart = () => {
     timer = setInterval(() => {
       setTick(tick => tick + 1)
     }, defaultInterval)
-    // setDirection(Direction.up)
+    setDirection(Direction.up)
     setStatus(GameStatus.init)
     setPosition(initialPosition)
     setFields(initFields(35, initialPosition))
   }
 
+  // console.log('進行方向', direction)
   return (
     <div className="App">
       <header className="header">
@@ -123,7 +188,7 @@ function App() {
 
       <footer className="footer">
         <Button status={status} onStart={onStart} onRestart={onRestart}/>
-        <ManipulationPanel />
+        <ManipulationPanel onChange={onChangeDirection} />
       </footer>
 
     </div>
