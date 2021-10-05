@@ -123,6 +123,10 @@ function App() {
     console.log(status);
   }
 
+  const onStop = () => {
+    setStatus(GameStatus.suspended)
+  }
+
   // 進行方向を変更する関数
   const handleMoving = () => {
     const { x, y } = body[0]  // オブジェクトの分割代入 positionには{x:17, y:17}、xとyには17,17が入っている
@@ -210,7 +214,7 @@ function App() {
       </main>
 
       <footer className="footer">
-        <Button status={status} onStart={onStart} onRestart={onRestart}/>
+        <Button status={status} onStart={onStart} onRestart={onRestart} onStop={onStop}/>
         <ManipulationPanel onChange={onChangeDirection} />
       </footer>
 
