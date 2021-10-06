@@ -21,3 +21,12 @@ tick => {
 }
 と同等の意味になりますが、 tick => { tick + 1 } では return 句がないので、
 返り値が undefined となってしまい動作しません。（ setTickに渡すコールバックでは次のステートの値を返す必要があるため）
+
+
+---------
+
+・font-awesome
+
+yarn add @fortawesome/fontawesome-svg-core \
+         @fortawesome/free-solid-svg-icons \
+         @fortawesome/react-fontawesome
