@@ -10,6 +10,8 @@ const initialPosition = {x: 17, y:17}
 // 35 * 35のdivを生成する
 const initialValues = initFields(35, initialPosition)
 const defaultInterval = 300
+const defaultDifficulty = 3
+const Difficulty = [1000, 500, 100, 50, 10]
 
 
 
@@ -87,6 +89,7 @@ function App() {
   // 進行方向をステートで管理
   const [direction, setDirection] = useState(Direction.up);
   const [body, setBody] = useState([]) //蛇が伸びる処理
+  const [difficulty, setDifficulty] = useState(defaultDifficulty);
 
 
   useEffect(() => {
@@ -96,11 +99,12 @@ function App() {
     //   new Array(15).fill('').map((_item, index) => ({ x: 17, y: 17 + index })),
     // )
     // ゲームの中の時間を管理する
+    const interval = Difficulty[difficulty -1]
     timer = setInterval(() => {
       setTick(tick => tick + 1);
-    }, defaultInterval)
+    }, interval)
     return unsubscribe // コンポーネントが削除されるタイミングで関数を呼ぶ
-  }, [])
+  }, [difficulty])
 
   // tickの更新によるレンダリングごとに関数（進む機能）を実行している →100ミリ秒(defaultIntervalの値）ごとにレンダリングされる → ゲームの中の時間が進むたびに関数が呼ばれる
   useEffect(() => {
@@ -175,6 +179,18 @@ function App() {
     setDirection(newDirection);
   }, [direction, status])
 
+  // 難易度を変更できるようにする関数
+  const onChangeDifficulty = useCallback((difficulty) => {
+    // 難易度は初期状態（ゲームを始める前）以外の時は変更できないようにする
+    if (status !== GameStatus.init) {
+      return;
+    }
+    // あたらしい難易度が難易度の範囲外の数の場合(5段階なので1~5以外の場合)も
+    if (difficulty < 1 || difficulty > Difficulty.length) {
+      return
+    }
+    setDifficulty(difficulty)
+  }, [status, difficulty])
 // 押された矢印のキーコードを取得し、キーコードのプロパティを取得('up'や'down'など) newDirectionには'up'や'down'などのstringが入る
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -207,7 +223,11 @@ function App() {
         <div className="title-container">
           <h1 className="title">Snake Game</h1>
         </div>
-        <Navigation/>
+        <Navigation
+          length={body.length}
+          difficulty={difficulty}
+          onChangeDifficulty={onChangeDifficulty}
+        />
       </header>
       <main className="main">
       <Field fields={fields} />
