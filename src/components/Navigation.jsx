@@ -1,8 +1,9 @@
 import React from "react";
+import { defaultDifficulty, Difficulty } from "../constants";
 
-export const Navigation = ({length, difficulty = 3, onChangeDifficulty}) => {
+export const Navigation = ({length, difficulty = defaultDifficulty, onChangeDifficulty}) => {
   // 難易度が 1 以下と5 以上の場合はis-hiddenをつけて矢印を非表示にする
-  const upVisibility = difficulty < 5 ? '' : 'is-hidden'
+  const upVisibility = difficulty < Difficulty.length ? '' : 'is-hidden'
   const downVisibility = difficulty > 1 ? '' : 'is-hidden'
   const onUpDifficulty = () => onChangeDifficulty(difficulty + 1)
   const onDownDifficulty = () => onChangeDifficulty(difficulty -1)

@@ -29,3 +29,23 @@ export const initFields = (fieldSize, snake) => {
 
 // some 関数はコールバックが一つでも true を返したら true を返す関数
 // 排除リストの中に同じ座標が含まれている場合はconflictが true になりそのまま while ループの先頭に戻って再度ランダムな座標を取得する
+
+// ①xかyの値がマイナスでなく、②フィールドサイズより小さい座標に収まっていない場合はぶつかっていると判断してtrueを返すisCollision関数を定義
+export const isCollision = (fieldSize, position) => {
+   // x,y 座標のどちらかが 0 より小さくなってしまっていることをチェック
+  if (position.y < 0 || position.x < 0) {
+    // x, y のどちらかの座標がマイナスの値 の時
+    return true;
+  }
+  // x,y 座標がフィールドより大きくなってしまった場合をチェック / fieldSize - 1 としているのは座標データが 0 始まりなので壁は-1とする
+  if (position.y > fieldSize - 1 || position.x > fieldSize - 1) {
+    // x, y のどちらかの座標がフィールドサイズを超えてしまっている時
+    return true;
+  }
+
+  return false;
+};
+
+export const isEatingMyself = (fields, position) => {
+  return fields[position.y][position.x] === 'snake'
+}
